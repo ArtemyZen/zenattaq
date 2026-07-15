@@ -1,0 +1,80 @@
+@import url("space-is-the-ocean.css?v=20260715-4");
+
+:root {
+  --bg: #011113;
+  --panel: rgba(2, 22, 24, 0.12);
+  --panel-strong: rgba(2, 28, 30, 0.16);
+  --text: #eefcf9;
+  --muted: #729895;
+  --cyan: #20cbb9;
+  --aqua: #43e4cf;
+  --coral: #31b6aa;
+  --pink: #7cebd9;
+  --foam: #effffb;
+  --line: rgba(75, 224, 205, 0.22);
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(23, 115, 110, 0.13), transparent 36%),
+    linear-gradient(135deg, #011416, #020b0d 58%, #061516);
+}
+
+.atmosphere {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(27, 148, 139, 0.1), transparent 34%),
+    radial-gradient(circle at 82% 32%, rgba(37, 112, 111, 0.08), transparent 34%);
+}
+
+.coming-soon-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.player-panel {
+  background: rgba(2, 18, 20, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.player-panel--empty { min-height: 310px; }
+
+.empty-player {
+  display: grid;
+  grid-template-columns: 1fr 42px 1fr;
+  align-items: center;
+  gap: 16px;
+  min-height: 142px;
+  padding: 28px 22px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  opacity: 0.42;
+}
+
+.empty-player__line { height: 1px; background: linear-gradient(90deg, transparent, var(--muted)); }
+.empty-player__line--short { background: linear-gradient(90deg, var(--muted), transparent); }
+.empty-player__disc { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; }
+
+.empty-tracklist { display: grid; }
+.empty-tracklist span { display: block; min-height: 34px; border-bottom: 1px solid rgba(75, 224, 205, 0.1); }
+.empty-tracklist span:last-child { border-bottom: 0; }
+
+.album-details { align-content: start; }
+.album-cover::after { opacity: 0.32; }
+.metamorphose-copy h2 { font-size: clamp(25px, 2vw, 34px); }
+.metamorphose-copy .album-copy__description { margin-top: 9px; font-size: clamp(10.5px, 0.76vw, 12.5px); line-height: 1.48; }
+
+.album-footer__lab {
+  display: grid;
+  text-align: center;
+}
+.album-footer__lab strong { color: var(--text); font-size: 10px; font-weight: 600; }
+.album-footer__lab span { font-size: 8px; }
+
+@media (max-width: 920px) {
+  .coming-soon-particles { display: none; }
+  .player-panel--empty { min-height: 250px; }
+}

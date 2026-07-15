@@ -1,42 +1,174 @@
 @import url("space-is-the-ocean.css?v=20260715-4");
 
 :root {
-  --bg: #011113;
-  --panel: rgba(2, 22, 24, 0.12);
-  --panel-strong: rgba(2, 28, 30, 0.16);
-  --text: #eefcf9;
-  --muted: #729895;
-  --cyan: #20cbb9;
-  --aqua: #43e4cf;
-  --coral: #31b6aa;
-  --pink: #7cebd9;
-  --foam: #effffb;
-  --line: rgba(75, 224, 205, 0.22);
+  --bg: #00151b;
+  --panel: rgba(0, 20, 29, 0.13);
+  --panel-strong: rgba(0, 27, 38, 0.18);
+  --text: #eafffb;
+  --muted: #6e9eaa;
+  --cyan: #059de8;
+  --aqua: #20e5d7;
+  --coral: #146bd3;
+  --pink: #58ffc0;
+  --foam: #e8fffb;
+  --line: rgba(19, 186, 225, 0.24);
 }
 
 body {
   background:
-    radial-gradient(circle at 50% 46%, rgba(23, 115, 110, 0.13), transparent 36%),
-    linear-gradient(135deg, #011416, #020b0d 58%, #061516);
+    radial-gradient(circle at 52% 44%, rgba(0, 78, 164, 0.14), transparent 38%),
+    radial-gradient(circle at 88% 22%, rgba(0, 144, 214, 0.045), transparent 28%),
+    linear-gradient(135deg, #000e17, #00080f 58%, #020a1b);
 }
 
 .atmosphere {
   background:
-    radial-gradient(circle at 18% 24%, rgba(27, 148, 139, 0.1), transparent 34%),
-    radial-gradient(circle at 82% 32%, rgba(37, 112, 111, 0.08), transparent 34%);
+    radial-gradient(circle at 16% 26%, rgba(0, 111, 210, 0.1), transparent 35%),
+    radial-gradient(circle at 82% 30%, rgba(0, 153, 225, 0.055), transparent 33%),
+    radial-gradient(circle at 54% 82%, rgba(30, 57, 166, 0.09), transparent 38%);
 }
 
-.coming-soon-particles {
+.album-header,
+.album-footer { background: rgba(0, 10, 18, 0.72); }
+
+.metamorph-page-particles {
   position: fixed;
-  inset: 0;
   z-index: 2;
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.album-layout {
+  grid-template-columns: minmax(250px, 310px) minmax(0, 1fr) minmax(250px, 310px);
+  column-gap: clamp(10px, 1vw, 18px);
+}
+
+.metamorph-vision {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 360px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(42, 188, 219, 0.32);
+  background:
+    radial-gradient(circle at 58% 34%, rgba(21, 115, 173, 0.17), transparent 42%),
+    radial-gradient(circle at 38% 68%, rgba(35, 232, 203, 0.07), transparent 40%),
+    #00151b;
+}
+
+.metamorph-vision__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.metamorph-vision__start,
+.metamorph-vision__stop,
+.metamorph-vision__fullscreen {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid rgba(37, 218, 231, 0.54);
+  color: var(--text);
+  background: rgba(0, 15, 23, 0.6);
+  font: inherit;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.metamorph-vision__start {
+  top: 50%;
+  left: 50%;
+  display: grid;
+  min-width: min(290px, 74%);
+  min-height: 104px;
+  padding: 20px 30px;
+  place-content: center;
+  gap: 7px;
+  transform: translate(-50%, -50%);
+}
+
+.metamorph-vision__start strong {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(24px, 2.45vw, 42px);
+  font-weight: 700;
+  line-height: 0.96;
+}
+
+.metamorph-vision__start span { color: var(--muted); font-size: 9px; }
+.metamorph-vision__start:hover { border-color: var(--foam); color: #021113; background: var(--foam); }
+.metamorph-vision__start:hover span { color: #176978; }
+
+.metamorph-vision__stop {
+  bottom: 15px;
+  left: 50%;
+  padding: 8px 13px;
+  color: var(--muted);
+  font-size: 8px;
+  transform: translateX(-50%);
+}
+
+.metamorph-vision__stop:hover { border-color: var(--foam); color: var(--foam); }
+.metamorph-vision__fullscreen {
+  right: 15px;
+  bottom: 15px;
+  padding: 8px 13px;
+  color: var(--muted);
+  font-size: 8px;
+}
+.metamorph-vision__fullscreen:hover { border-color: var(--foam); color: var(--foam); }
+.metamorph-vision__start[hidden],
+.metamorph-vision__stop[hidden] { display: none; }
+
+.metamorph-vision:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  border: 0;
+}
+
+.metamorph-vision.is-fallback-fullscreen {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  width: 100vw;
+  height: 100svh;
+  min-height: 100svh;
+  margin: 0;
+  border: 0;
+}
+
+body.vision-fullscreen-lock { overflow: hidden; }
+
+.metamorph-vision__status {
+  position: absolute;
+  z-index: 2;
+  top: calc(50% + 70px);
+  left: 50%;
+  width: min(420px, 80%);
+  margin: 0;
+  color: #61ffd1;
+  font-size: 9px;
+  line-height: 1.45;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translateX(-50%);
 }
 
 .player-panel {
-  background: rgba(2, 18, 20, 0.08);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(42, 255, 188, 0.035), transparent 42%),
+    rgba(0, 20, 31, 0.09);
   backdrop-filter: blur(4px);
 }
 
@@ -75,6 +207,14 @@ body {
 .album-footer__lab span { font-size: 8px; }
 
 @media (max-width: 920px) {
-  .coming-soon-particles { display: none; }
+  .metamorph-vision {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100vw;
+    height: 100svh;
+    min-height: 100svh;
+    margin: 10px 0 22px calc(50% - 50vw);
+  }
+  .player-panel { grid-row: 3; }
   .player-panel--empty { min-height: 250px; }
 }
