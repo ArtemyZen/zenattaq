@@ -21,8 +21,8 @@ if (!reduceMotion.matches) {
         art.style.setProperty("--tilt-y", `${x * 8}deg`);
         art.style.setProperty("--shadow-x", `${x * -18}px`);
         art.style.setProperty("--shadow-y", `${18 + y * 12}px`);
-        art.style.setProperty("--glare-x", `${50 + x * 70}%`);
-        art.style.setProperty("--glare-y", `${50 + y * 70}%`);
+        art.style.setProperty("--shine-x", `${x * 145 + 50}%`);
+        art.style.setProperty("--shine-angle", `${112 + y * 18}deg`);
       });
     };
 
@@ -32,8 +32,8 @@ if (!reduceMotion.matches) {
       art.style.setProperty("--tilt-y", "0deg");
       art.style.setProperty("--shadow-x", "0px");
       art.style.setProperty("--shadow-y", "18px");
-      art.style.setProperty("--glare-x", "50%");
-      art.style.setProperty("--glare-y", "50%");
+      art.style.setProperty("--shine-x", "-45%");
+      art.style.setProperty("--shine-angle", "112deg");
     };
 
     art.addEventListener("pointermove", update);
