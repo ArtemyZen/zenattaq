@@ -33,6 +33,7 @@ let analysisSource;
 let capturedStream;
 const localFileMode = window.location.protocol === "file:";
 
+
 if (year) year.textContent = new Date().getFullYear();
 
 const formatTime = (seconds) => {
@@ -45,7 +46,7 @@ const updatePlayButton = () => {
   const playing = !audio.paused;
   playButton.classList.toggle("is-playing", playing);
   playButton.setAttribute("aria-label", playing ? "Pause" : "Play");
-  playIcon.textContent = playing ? "Ⅱ" : "▶";
+  playIcon.textContent = playing ? "" : "▶";
 };
 
 const initAudioAnalysis = () => {
@@ -168,11 +169,13 @@ if (albumCover && !reducedMotion.matches) {
     const y = (event.clientY - rect.top) / rect.height - 0.5;
     cancelAnimationFrame(coverFrame);
     coverFrame = requestAnimationFrame(() => {
-      albumCover.style.setProperty("--cover-tilt-x", `${y * -7}deg`);
-      albumCover.style.setProperty("--cover-tilt-y", `${x * 7}deg`);
-      albumCover.style.setProperty("--cover-shadow-x", `${x * -16}px`);
+      albumCover.style.setProperty("--cover-tilt-x", `${y * -8}deg`);
+      albumCover.style.setProperty("--cover-tilt-y", `${x * 8}deg`);
+      albumCover.style.setProperty("--cover-shadow-x", `${x * -18}px`);
+      albumCover.style.setProperty("--cover-shadow-y", `${18 + y * 12}px`);
       albumCover.style.setProperty("--cover-foil-x", `${50 + x * 62}%`);
       albumCover.style.setProperty("--cover-foil-y", `${50 + y * 62}%`);
+      albumCover.style.setProperty("--cover-foil-angle", `${112 + x * 16 - y * 12}deg`);
     });
   });
   albumCover.addEventListener("pointerleave", () => {
@@ -180,8 +183,10 @@ if (albumCover && !reducedMotion.matches) {
     albumCover.style.setProperty("--cover-tilt-x", "0deg");
     albumCover.style.setProperty("--cover-tilt-y", "0deg");
     albumCover.style.setProperty("--cover-shadow-x", "0px");
+    albumCover.style.setProperty("--cover-shadow-y", "18px");
     albumCover.style.setProperty("--cover-foil-x", "50%");
     albumCover.style.setProperty("--cover-foil-y", "50%");
+    albumCover.style.setProperty("--cover-foil-angle", "112deg");
   });
 }
 
@@ -189,6 +194,13 @@ const particleCanvas = document.querySelector("[data-particle-ocean]");
 const particleContext = particleCanvas.getContext("2d", { alpha: true });
 const spectrumCanvas = document.querySelector("[data-spectrum]");
 const spectrumContext = spectrumCanvas.getContext("2d");
+const centerCanvas = document.querySelector("[data-center-visualizer]");
+const centerContext = centerCanvas.getContext("2d", { alpha: true });
+const syntheticSpectrum = new Float32Array(54);
+const centerOffsetX = new Float32Array(2500);
+const centerOffsetY = new Float32Array(2500);
+const centerVelocityX = new Float32Array(2500);
+const centerVelocityY = new Float32Array(2500);
 const particleMap = window.SPACE_OCEAN_PARTICLE_MAP;
 const particlePixels = particleMap
   ? Uint8Array.from(atob(particleMap.pixels), (character) => character.charCodeAt(0))
@@ -204,6 +216,27 @@ let previousFrameTime = performance.now();
 const seeded = (value, offset = 0) => {
   const seed = Math.sin((value + 1) * 12.9898 + offset * 78.233) * 43758.5453;
   return seed - Math.floor(seed);
+};
+
+const updateCenterParticle = (index, baseX, baseY, rect, influence) => {
+  const x = baseX + centerOffsetX[index];
+  const y = baseY + centerOffsetY[index];
+  if (mouse.active) {
+    const dx = x - (mouse.x - rect.left);
+    const dy = y - (mouse.y - rect.top);
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > 0.1 && distance < influence) {
+      const force = (1 - distance / influence) * 1.45;
+      centerVelocityX[index] += (dx / distance) * force;
+      centerVelocityY[index] += (dy / distance) * force;
+    }
+  }
+  centerVelocityX[index] += -centerOffsetX[index] * 0.012;
+  centerVelocityY[index] += -centerOffsetY[index] * 0.012;
+  centerVelocityX[index] *= 0.92;
+  centerVelocityY[index] *= 0.92;
+  centerOffsetX[index] += centerVelocityX[index];
+  centerOffsetY[index] += centerVelocityY[index];
 };
 
 const sampleCoverLegacy = () => {
@@ -307,88 +340,41 @@ const sampleCover = () => {
   particleCanvas.style.height = `${viewportHeight}px`;
   particleContext.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
 
-  const headerBottom = document.querySelector(".album-header")?.getBoundingClientRect().bottom || 68;
-  const footerTop = document.querySelector(".album-footer")?.getBoundingClientRect().top || viewportHeight;
-  const atmosphereHeight = Math.max(300, footerTop - headerBottom);
-  const horizon = headerBottom + atmosphereHeight * 0.38;
-  const clouds = [];
-  const water = [];
-
-  const cloudColumns = Math.min(particleMap.width, Math.max(100, Math.floor(viewportWidth / 9)));
-  const cloudRows = 30;
-  for (let sy = 0; sy < cloudRows; sy += 1) {
-    for (let sx = 0; sx < cloudColumns; sx += 1) {
-      const mapX = Math.min(particleMap.width - 1, Math.floor((sx / Math.max(1, cloudColumns - 1)) * (particleMap.width - 1)));
-      const mapY = Math.min(48, Math.floor((sy / Math.max(1, cloudRows - 1)) * 48));
-      const pixel = (mapY * particleMap.width + mapX) * 3;
-      const r = particlePixels[pixel];
-      const g = particlePixels[pixel + 1];
-      const b = particlePixels[pixel + 2];
-      const brightness = (r + g + b) / 3;
-      const selector = ((sx * 43 + sy * 29) % 103) / 102;
-      if (brightness < 28 || selector > 0.12 + brightness / 390) continue;
-      const index = sx + sy * cloudColumns;
-      const random = seeded(index, 11);
-      const targetX = (sx / Math.max(1, cloudColumns - 1)) * viewportWidth;
-      const targetY = headerBottom + 14 + (sy / Math.max(1, cloudRows - 1)) * Math.max(80, horizon - headerBottom - 28);
-      clouds.push({
-        kind: "cloud",
-        x: targetX + (random - 0.5) * 36,
-        y: targetY + (seeded(index, 12) - 0.5) * 24,
-        tx: targetX,
-        ty: targetY,
-        baseTy: targetY,
-        vx: 0,
-        vy: 0,
-        speed: 0.008 + random * 0.018,
-        r,
-        g,
-        b,
-        alpha: Math.min(0.42, 0.08 + brightness / 820),
-        size: 0.38 + random * 0.68,
-        phase: random * Math.PI * 2,
-      });
-    }
+  const ambient = [];
+  const count = Math.min(1800, Math.max(760, Math.floor((viewportWidth * viewportHeight) / 1450)));
+  for (let index = 0; index < count; index += 1) {
+    const targetX = seeded(index, 11) * viewportWidth;
+    const targetY = seeded(index, 12) * viewportHeight;
+    const mapX = Math.floor(seeded(index, 13) * particleMap.width);
+    const mapY = Math.floor(seeded(index, 14) * particleMap.height);
+    const pixel = (mapY * particleMap.width + mapX) * 3;
+    const sourceR = particlePixels[pixel];
+    const sourceG = particlePixels[pixel + 1];
+    const sourceB = particlePixels[pixel + 2];
+    const pink = seeded(index, 15) > 0.84;
+    const r = pink ? Math.max(150, sourceR) : Math.min(105, sourceR + 18);
+    const g = pink ? Math.min(155, sourceG) : Math.max(145, sourceG);
+    const b = pink ? Math.max(155, sourceB) : Math.max(175, sourceB);
+    const random = seeded(index, 16);
+    ambient.push({
+      kind: "ambient",
+      x: targetX + (random - 0.5) * 26,
+      y: targetY + (seeded(index, 17) - 0.5) * 26,
+      tx: targetX,
+      ty: targetY,
+      baseTx: targetX,
+      baseTy: targetY,
+      vx: 0,
+      vy: 0,
+      r,
+      g,
+      b,
+      alpha: 0.08 + random * 0.2,
+      size: 0.48 + random * 0.78,
+      phase: random * Math.PI * 2,
+    });
   }
-
-  const waterColumns = Math.min(particleMap.width, Math.max(110, Math.floor(viewportWidth / 8)));
-  const waterRows = Math.min(68, Math.max(44, Math.floor((footerTop - horizon) / 8)));
-  for (let sy = 0; sy < waterRows; sy += 1) {
-    for (let sx = 0; sx < waterColumns; sx += 1) {
-      const mapX = Math.min(particleMap.width - 1, Math.floor((sx / Math.max(1, waterColumns - 1)) * (particleMap.width - 1)));
-      const mapY = 44 + Math.floor((sy / Math.max(1, waterRows - 1)) * (particleMap.height - 45));
-      const pixel = (mapY * particleMap.width + mapX) * 3;
-      const r = particlePixels[pixel];
-      const g = particlePixels[pixel + 1];
-      const b = particlePixels[pixel + 2];
-      const brightness = (r + g + b) / 3;
-      const selector = ((sx * 31 + sy * 67) % 107) / 106;
-      if (brightness < 9 || selector > 0.16 + brightness / 430) continue;
-      const index = sx + sy * waterColumns;
-      const random = seeded(index, 13);
-      const targetX = (sx / Math.max(1, waterColumns - 1)) * viewportWidth;
-      const targetY = horizon + (sy / Math.max(1, waterRows - 1)) * Math.max(120, footerTop - horizon);
-      water.push({
-        kind: "water",
-        x: targetX + (random - 0.5) * 30,
-        y: targetY + (seeded(index, 14) - 0.5) * 30,
-        tx: targetX,
-        ty: targetY,
-        baseTx: targetX,
-        baseTy: targetY,
-        vx: 0,
-        vy: 0,
-        r,
-        g,
-        b,
-        alpha: Math.min(0.5, 0.09 + brightness / 720),
-        size: 0.34 + random * 0.72,
-        phase: random * Math.PI * 2,
-      });
-    }
-  }
-
-  particles = [...clouds, ...water];
+  particles = ambient;
 };
 
 const getAudioEnergy = () => {
@@ -425,10 +411,18 @@ const drawSpectrum = (energy, time) => {
   const gap = 3;
   const width = rect.width / bars - gap;
   for (let index = 0; index < bars; index += 1) {
-    const frequency = frequencyData?.[Math.floor((index / bars) * (frequencyData.length * 0.68))] / 255 || 0;
+    const frequency = audio.paused
+      ? 0
+      : frequencyData?.[Math.floor((index / bars) * (frequencyData.length * 0.68))] / 255 || 0;
     const idle = 0.025 + Math.sin(time * 0.0012 + index * 0.42) * 0.015;
-    const value = Math.max(idle, frequency);
-    const height = Math.max(2, value * rect.height * 0.72);
+    const spectrumFrame = Math.floor(audio.currentTime * 11);
+    const frequencyShape = 0.38 + Math.exp(-index / 18) * 0.62;
+    const target = audio.paused ? 0 : (0.035 + seeded(spectrumFrame, index + 70) * 0.15)
+      * frequencyShape * (0.72 + energy.bass * 2.7 + energy.overall * 1.9);
+    syntheticSpectrum[index] += (target - syntheticSpectrum[index]) * 0.2;
+    const fallback = syntheticSpectrum[index];
+    const value = Math.max(idle, frequency, fallback);
+    const height = Math.max(2, value * rect.height * 0.84);
     const gradient = spectrumContext.createLinearGradient(0, rect.height - height, 0, rect.height);
     gradient.addColorStop(0, `rgba(255, 101, 157, ${0.2 + value * 0.55})`);
     gradient.addColorStop(0.48, `rgba(47, 211, 240, ${0.12 + value * 0.35})`);
@@ -436,6 +430,111 @@ const drawSpectrum = (energy, time) => {
     spectrumContext.fillStyle = gradient;
     spectrumContext.fillRect(index * (width + gap), rect.height - height, Math.max(1, width), height);
   }
+};
+
+const drawCenterVisualizer = (energy, time) => {
+  if (!centerCanvas || !centerContext) return;
+  const rect = centerCanvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const scale = Math.min(window.devicePixelRatio || 1, 1.5);
+  const targetWidth = Math.floor(rect.width * scale);
+  const targetHeight = Math.floor(rect.height * scale);
+  if (centerCanvas.width !== targetWidth || centerCanvas.height !== targetHeight) {
+    centerCanvas.width = targetWidth;
+    centerCanvas.height = targetHeight;
+  }
+  centerContext.setTransform(scale, 0, 0, scale, 0, 0);
+  centerContext.clearRect(0, 0, rect.width, rect.height);
+
+  const headerBottom = document.querySelector(".album-header")?.getBoundingClientRect().bottom || 0;
+  const footerTop = document.querySelector(".album-footer")?.getBoundingClientRect().top || window.innerHeight;
+  const cx = window.innerWidth / 2 - rect.left;
+  const cy = headerBottom + (footerTop - headerBottom) / 2 - rect.top;
+  const radius = Math.min(rect.width, rect.height) * 0.145;
+  const rotation = time * 0.000035;
+  const glow = centerContext.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.7);
+  glow.addColorStop(0, "rgba(47, 211, 240, 0.075)");
+  glow.addColorStop(0.55, "rgba(255, 101, 157, 0.04)");
+  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  centerContext.fillStyle = glow;
+  centerContext.fillRect(cx - radius * 1.8, cy - radius * 1.8, radius * 3.6, radius * 3.6);
+  centerContext.globalCompositeOperation = "lighter";
+
+  centerContext.save();
+  centerContext.translate(cx, cy);
+  centerContext.rotate(-0.16);
+  const detailsRect = document.querySelector(".album-details")?.getBoundingClientRect();
+  const playerRect = document.querySelector(".player-panel")?.getBoundingClientRect();
+  const leftBoundary = detailsRect ? detailsRect.right + 32 : rect.left + rect.width * 0.27;
+  const rightBoundary = playerRect ? playerRect.left - 32 : rect.left + rect.width * 0.73;
+  const corridorHalfWidth = Math.max(radius * 1.8, Math.min(cx - leftBoundary, rightBoundary - cx));
+  const ringMax = Math.min(2.75, corridorHalfWidth / radius);
+  for (let orbit = 0; orbit < 5; orbit += 1) {
+    const rx = radius * (1.45 + (ringMax - 1.45) * (orbit / 4));
+    const ry = radius * (0.42 + orbit * 0.14);
+    centerContext.beginPath();
+    centerContext.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+    centerContext.strokeStyle = orbit % 3 === 1
+      ? "rgba(255, 101, 157, 0.4)"
+      : "rgba(47, 211, 240, 0.34)";
+    centerContext.lineWidth = 0.86;
+    centerContext.shadowColor = orbit % 3 === 1 ? "rgba(255, 101, 157, 0.4)" : "rgba(47, 211, 240, 0.38)";
+    centerContext.shadowBlur = 5;
+    centerContext.stroke();
+  }
+  centerContext.shadowBlur = 0;
+  centerContext.restore();
+
+  for (let index = 0; index < 2000; index += 1) {
+    const angle = index * 2.399963 + rotation;
+    const radial = radius * Math.sqrt(seeded(index, 31));
+    const depth = Math.sin(angle) * 0.5 + 0.5;
+    let x = cx + Math.cos(angle) * radial;
+    let y = cy + Math.sin(angle) * radial * 0.82;
+    updateCenterParticle(index, x, y, rect, radius * 1.15);
+    x += centerOffsetX[index];
+    y += centerOffsetY[index];
+    const pink = seeded(index, 32) > 0.77;
+    const alpha = Math.min(0.98, 0.34 + depth * 0.48);
+    centerContext.fillStyle = pink
+      ? `rgba(255, 101, 157, ${alpha})`
+      : `rgba(79, 221, 242, ${alpha})`;
+    centerContext.beginPath();
+    centerContext.arc(x, y, 0.5 + seeded(index, 33) * 0.72, 0, Math.PI * 2);
+    centerContext.fill();
+  }
+
+  const moons = [
+    { spread: 0.12, speed: -0.00005, phase: 0, pink: true },
+    { spread: 0.34, speed: 0.000047, phase: 1.257, pink: false },
+    { spread: 0.56, speed: -0.000043, phase: 2.514, pink: true },
+    { spread: 0.78, speed: 0.000039, phase: 3.77, pink: false },
+    { spread: 1, speed: -0.000035, phase: 5.027, pink: true },
+  ];
+  const maxMoonOrbit = Math.max(3, (rect.width / 2 - 22) / radius);
+  moons.forEach((moon, moonIndex) => {
+    const angle = time * moon.speed + moon.phase;
+    const moonOrbit = 2 + (maxMoonOrbit - 2) * moon.spread;
+    const mx = cx + Math.cos(angle) * radius * moonOrbit;
+    const my = cy + Math.sin(angle) * radius * moonOrbit * 0.36;
+    for (let index = 0; index < 100; index += 1) {
+      const dotAngle = index * 2.399963;
+      const dotRadius = Math.sqrt(seeded(index, 40 + moonIndex)) * radius * 0.11;
+      const particleIndex = 2000 + moonIndex * 100 + index;
+      let moonX = mx + Math.cos(dotAngle) * dotRadius;
+      let moonY = my + Math.sin(dotAngle) * dotRadius;
+      updateCenterParticle(particleIndex, moonX, moonY, rect, radius * 0.72);
+      moonX += centerOffsetX[particleIndex];
+      moonY += centerOffsetY[particleIndex];
+      centerContext.fillStyle = moon.pink
+        ? "rgba(255, 126, 171, 0.48)"
+        : "rgba(112, 232, 244, 0.45)";
+      centerContext.beginPath();
+      centerContext.arc(moonX, moonY, 0.35 + seeded(index, 44) * 0.42, 0, Math.PI * 2);
+      centerContext.fill();
+    }
+  });
+  centerContext.globalCompositeOperation = "source-over";
 };
 
 const animate = (time) => {
@@ -446,47 +545,21 @@ const animate = (time) => {
   particleContext.globalCompositeOperation = "lighter";
 
   for (const particle of particles) {
-    if (particle.kind === "cloud") {
-      particle.tx -= particle.speed * delta * (1 + energy.overall * 3.2);
-      if (particle.tx < -26) {
-        particle.tx += viewportWidth + 52;
-        particle.x += viewportWidth + 52;
-      }
-      particle.ty = particle.baseTy + Math.sin(time * 0.00045 + particle.phase) * (1.2 + energy.overall * 3.5);
-    } else {
-      const waveAmplitude = 3.2 + energy.bass * 12 + energy.overall * 5;
-      particle.tx = particle.baseTx + Math.sin(time * 0.0007 + particle.phase) * (1.2 + energy.overall * 2.2);
-      particle.ty = particle.baseTy
-        + Math.sin(particle.baseTx * 0.017 + time * 0.00125 + particle.phase) * waveAmplitude
-        + Math.sin(particle.baseTx * 0.007 - time * 0.00075) * 1.8;
-    }
+    particle.tx = particle.baseTx;
+    particle.ty = particle.baseTy;
 
     const dx = particle.x - mouse.x;
     const dy = particle.y - mouse.y;
     const distanceSquared = dx * dx + dy * dy;
-    if (mouse.active && distanceSquared < 32400 && distanceSquared > 0.1) {
+    if (mouse.active && distanceSquared < 25600 && distanceSquared > 0.1) {
       const distance = Math.sqrt(distanceSquared);
-      const radialX = dx / distance;
-      const radialY = dy / distance;
-      const tangentX = -radialY;
-      const tangentY = radialX;
-      const chaosA = Math.sin(time * 0.012 + particle.phase * 17.3);
-      const chaosB = Math.cos(time * 0.009 + particle.phase * 23.7);
-      const force = (1 - distance / 180) * 2.15;
-      particle.vx += (radialX * 0.48 + tangentX * chaosA * 1.18 + chaosB * 0.58) * force;
-      particle.vy += (radialY * 0.48 + tangentY * chaosB * 1.18 + chaosA * 0.58) * force;
+      const force = (1 - distance / 160) * 1.15;
+      particle.vx += (dx / distance) * force;
+      particle.vy += (dy / distance) * force;
     }
 
-    if (particle.kind === "water") {
-      particle.vx += Math.cos(time * 0.002 + particle.phase) * energy.overall * 0.12;
-      particle.vy += Math.sin(time * 0.0026 + particle.phase) * energy.bass * 0.22;
-    } else {
-      particle.vx -= energy.overall * 0.035;
-      particle.vy += Math.sin(time * 0.0018 + particle.phase) * energy.bass * 0.12;
-    }
-
-    const spring = particle.kind === "water" ? 0.026 : 0.017;
-    const damping = particle.kind === "water" ? 0.89 : 0.92;
+    const spring = 0.0073;
+    const damping = 0.93;
     particle.vx += (particle.tx - particle.x) * spring;
     particle.vy += (particle.ty - particle.y) * spring;
     particle.vx *= damping;
@@ -494,9 +567,8 @@ const animate = (time) => {
     particle.x += particle.vx;
     particle.y += particle.vy;
 
-    const pulse = 1 + Math.min(0.38, energy.overall * 0.5 + energy.bass * 0.18);
-    const energyAlpha = energy.overall * 1.05 + energy.bass * 0.32;
-    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${Math.min(1, particle.alpha * (0.74 + energyAlpha))})`;
+    const pulse = 1;
+    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${Math.min(1, particle.alpha * 0.74)})`;
     particleContext.beginPath();
     particleContext.arc(particle.x, particle.y, particle.size * pulse, 0, Math.PI * 2);
     particleContext.fill();
@@ -504,6 +576,7 @@ const animate = (time) => {
 
   particleContext.globalCompositeOperation = "source-over";
   drawSpectrum(energy, time);
+  drawCenterVisualizer(energy, time);
   requestAnimationFrame(animate);
 };
 

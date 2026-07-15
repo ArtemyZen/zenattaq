@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Metamorphose — an upcoming album by ZEN ATTAQ." />
+    <meta name="theme-color" content="#021416" />
+    <title>Metamorphose — ZEN ATTAQ</title>
+    <link rel="icon" href="../assets/favicon-a.svg?v=2" type="image/svg+xml" />
+    <link rel="stylesheet" href="metamorphose.css" />
+    <script src="metamorphose.js" defer></script>
+  </head>
+  <body>
+    <canvas class="coming-soon-particles" data-coming-soon aria-hidden="true"></canvas>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="album-header">
+      <a class="back-link" href="../index.html" aria-label="Back to discography">
+        <span aria-hidden="true">←</span><span>Discography</span>
+      </a>
+      <a class="identity title-font" href="../index.html">ZEN ATTAQ</a>
+      <p>Album / forthcoming</p>
+    </header>
+
+    <main class="album-layout">
+      <section class="player-panel player-panel--empty" aria-label="Audio player — coming soon">
+        <div class="panel-kicker"><span>-- / --</span><span>Audio transmission</span></div>
+        <div class="empty-player" aria-hidden="true">
+          <div class="empty-player__line"></div>
+          <div class="empty-player__disc"></div>
+          <div class="empty-player__line empty-player__line--short"></div>
+        </div>
+        <div class="empty-tracklist" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </section>
+
+      <aside class="album-details" aria-label="Metamorphose artwork">
+        <figure class="album-cover" data-album-cover-tilt>
+          <img src="../assets/covers/metamorphose.png" alt="Metamorphose album cover" width="1600" height="1600" />
+          <figcaption>ZEN ATTAQ / METAMORPHOSE</figcaption>
+        </figure>
+
+        <div class="album-copy metamorphose-copy">
+          <h2 class="title-font">Metamorphose</h2>
+          <p class="album-copy__description">
+            <strong>Metamorphose</strong> brings together previously unreleased music created between 2012 and
+            2022. The album is built on contrasts: dynamic, cinematic breakcore gives way to dreamlike ambient,
+            while harsh dystopian hip-hop later dissolves into meditative synthwave. Written across different
+            periods of the artist’s life, these tracks reflect solitude, memory and the attempt to understand the
+            person left behind. Yet even in its darkest moments, the album carries a quiet sense of hope – the
+            possibility that change does not only mean losing something, but becoming something new.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="album-footer">
+      <p class="title-font">ZEN ATTAQ</p>
+      <p>© <span data-current-year>2026</span> / All sounds reserved</p>
+      <a class="album-footer__lab" href="https://attaqlab.com" target="_blank" rel="noreferrer">
+        <strong>ATTAQ LAB</strong><span>Software for creatives</span>
+      </a>
+      <div class="album-footer__bandcamp">
+        <span aria-hidden="true">Bandcamp</span>
+        <iframe title="Follow ZEN ATTAQ on Bandcamp" scrolling="no" src="https://bandcamp.com/band_follow_button_deluxe/3474102071"></iframe>
+      </div>
+    </footer>
+  </body>
+</html>
