@@ -29,6 +29,8 @@ let currentTrack = 0;
 let audioContext;
 let analyser;
 let frequencyData;
+let analysisSource;
+let capturedStream;
 const localFileMode = window.location.protocol === "file:";
 
 if (year) year.textContent = new Date().getFullYear();
@@ -47,7 +49,10 @@ const updatePlayButton = () => {
 };
 
 const initAudioAnalysis = () => {
-  if (audioContext || localFileMode) return;
+  if (audioContext) {
+    audioContext.resume();
+    return;
+  }
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return;
   audioContext = new AudioContext();
@@ -55,16 +60,37 @@ const initAudioAnalysis = () => {
   analyser.fftSize = 256;
   analyser.smoothingTimeConstant = 0.82;
   frequencyData = new Uint8Array(analyser.frequencyBinCount);
-  const source = audioContext.createMediaElementSource(audio);
-  source.connect(analyser);
-  analyser.connect(audioContext.destination);
+  if (localFileMode) {
+    const capture = audio.captureStream || audio.mozCaptureStream;
+    if (!capture) {
+      analyser = undefined;
+      frequencyData = undefined;
+      return;
+    }
+    try {
+      capturedStream = capture.call(audio);
+      analysisSource = audioContext.createMediaStreamSource(capturedStream);
+      analysisSource.connect(analyser);
+    } catch (error) {
+      console.warn("Live audio analysis is unavailable in this browser", error);
+      analyser = undefined;
+      frequencyData = undefined;
+    }
+  } else {
+    analysisSource = audioContext.createMediaElementSource(audio);
+    analysisSource.connect(analyser);
+    analyser.connect(audioContext.destination);
+  }
+  audioContext.resume();
 };
 
 const playAudio = () => {
-  audio.play().catch((error) => {
-    console.error("Unable to play the selected track", error);
-    updatePlayButton();
-  });
+  audio.play()
+    .then(() => initAudioAnalysis())
+    .catch((error) => {
+      console.error("Unable to play the selected track", error);
+      updatePlayButton();
+    });
 };
 
 const setTrack = (index, autoplay = false) => {
@@ -83,8 +109,6 @@ const setTrack = (index, autoplay = false) => {
   });
   document.querySelector(".panel-kicker span:first-child").textContent = `${String(currentTrack + 1).padStart(2, "0")} / ${String(tracks.length).padStart(2, "0")}`;
   if (autoplay) {
-    initAudioAnalysis();
-    audioContext?.resume();
     playAudio();
   }
 };
@@ -110,14 +134,13 @@ tracks.forEach((track, index) => {
 });
 
 playButton.addEventListener("click", () => {
-  initAudioAnalysis();
-  audioContext?.resume();
   if (audio.paused) playAudio(); else audio.pause();
 });
 
 previousButton.addEventListener("click", () => setTrack(currentTrack - 1, true));
 nextButton.addEventListener("click", () => setTrack(currentTrack + 1, true));
 audio.addEventListener("play", updatePlayButton);
+audio.addEventListener("playing", initAudioAnalysis);
 audio.addEventListener("pause", updatePlayButton);
 audio.addEventListener("ended", () => setTrack(currentTrack + 1, true));
 audio.addEventListener("loadedmetadata", () => { durationNode.textContent = formatTime(audio.duration); });
@@ -163,7 +186,8 @@ if (albumCover && !reducedMotion.matches) {
 }
 
 const particleCanvas = document.querySelector("[data-particle-ocean]");
-const particleContext = particleCanvas.getContext("2d", { alpha: false });
+const particleContext = particleCanvas.getContext("2d", { alpha: true });
+const particleStage = document.querySelector("[data-particle-stage]");
 const spectrumCanvas = document.querySelector("[data-spectrum]");
 const spectrumContext = spectrumCanvas.getContext("2d");
 const particleMap = window.SPACE_OCEAN_PARTICLE_MAP;
@@ -176,9 +200,15 @@ let deviceScale = Math.min(window.devicePixelRatio || 1, 1.6);
 let mouse = { x: -1000, y: -1000, active: false };
 let viewportWidth = window.innerWidth;
 let viewportHeight = window.innerHeight;
+let stageCenter = { x: viewportWidth / 2, y: viewportHeight / 2 };
+
+const seeded = (value, offset = 0) => {
+  const seed = Math.sin((value + 1) * 12.9898 + offset * 78.233) * 43758.5453;
+  return seed - Math.floor(seed);
+};
 
 const sampleCover = () => {
-  if (!particleMap || !particlePixels) return;
+  if (!particleMap || !particlePixels || !particleStage) return;
   viewportWidth = window.innerWidth;
   viewportHeight = window.innerHeight;
   deviceScale = Math.min(window.devicePixelRatio || 1, 1.6);
@@ -188,41 +218,33 @@ const sampleCover = () => {
   particleCanvas.style.height = `${viewportHeight}px`;
   particleContext.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
 
-  const sampleWidth = Math.min(particleMap.width, Math.max(100, Math.floor(viewportWidth / 9)));
-  const sampleHeight = Math.min(particleMap.height, Math.max(70, Math.floor(viewportHeight / 9)));
-  const imageRatio = particleMap.width / particleMap.height;
-  const screenRatio = sampleWidth / sampleHeight;
-  let sourceX = 0;
-  let sourceY = 0;
-  let sourceWidth = particleMap.width;
-  let sourceHeight = particleMap.height;
-  if (imageRatio > screenRatio) {
-    sourceWidth = particleMap.height * screenRatio;
-    sourceX = (particleMap.width - sourceWidth) / 2;
-  } else {
-    sourceHeight = particleMap.width / screenRatio;
-    sourceY = (particleMap.height - sourceHeight) / 2;
-  }
-  const nextParticles = [];
+  const stageRect = particleStage.getBoundingClientRect();
+  stageCenter = {
+    x: stageRect.left + stageRect.width / 2,
+    y: stageRect.top + stageRect.height / 2,
+  };
+  const sampleWidth = Math.min(particleMap.width, Math.max(64, Math.floor(stageRect.width / 4.6)));
+  const sampleHeight = Math.min(particleMap.height, Math.max(64, Math.floor(stageRect.height / 4.6)));
+  const artworkParticles = [];
   for (let sy = 0; sy < sampleHeight; sy += 1) {
     for (let sx = 0; sx < sampleWidth; sx += 1) {
-      const mapX = Math.min(particleMap.width - 1, Math.floor(sourceX + (sx / Math.max(1, sampleWidth - 1)) * sourceWidth));
-      const mapY = Math.min(particleMap.height - 1, Math.floor(sourceY + (sy / Math.max(1, sampleHeight - 1)) * sourceHeight));
+      const mapX = Math.min(particleMap.width - 1, Math.floor((sx / Math.max(1, sampleWidth - 1)) * (particleMap.width - 1)));
+      const mapY = Math.min(particleMap.height - 1, Math.floor((sy / Math.max(1, sampleHeight - 1)) * (particleMap.height - 1)));
       const pixel = (mapY * particleMap.width + mapX) * 3;
       const r = particlePixels[pixel];
       const g = particlePixels[pixel + 1];
       const b = particlePixels[pixel + 2];
       const brightness = (r + g + b) / 3;
-      const density = 0.2 + (brightness / 255) * 0.52;
+      const density = 0.28 + (brightness / 255) * 0.58;
       const selector = ((sx * 37 + sy * 61) % 101) / 100;
       if (brightness < 7 || selector > density) continue;
-      const targetX = (sx / sampleWidth) * viewportWidth;
-      const targetY = (sy / sampleHeight) * viewportHeight;
-      const seed = Math.sin((sx + 1) * 12.9898 + (sy + 1) * 78.233) * 43758.5453;
-      const random = seed - Math.floor(seed);
-      nextParticles.push({
-        x: targetX + (random - 0.5) * 42,
-        y: targetY + (((random * 7.13) % 1) - 0.5) * 42,
+      const targetX = stageRect.left + (sx / Math.max(1, sampleWidth - 1)) * stageRect.width;
+      const targetY = stageRect.top + (sy / Math.max(1, sampleHeight - 1)) * stageRect.height;
+      const random = seeded(sx + sy * sampleWidth, 1);
+      artworkParticles.push({
+        kind: "artwork",
+        x: targetX + (random - 0.5) * 34,
+        y: targetY + (seeded(sx + sy * sampleWidth, 2) - 0.5) * 34,
         tx: targetX,
         ty: targetY,
         vx: 0,
@@ -230,13 +252,49 @@ const sampleCover = () => {
         r,
         g,
         b,
-        alpha: Math.min(0.82, 0.16 + brightness / 360),
-        size: 0.55 + random * 1.35,
+        alpha: Math.min(0.94, 0.24 + brightness / 300),
+        size: 0.72 + random * 1.45,
         phase: random * Math.PI * 2,
       });
     }
   }
-  particles = nextParticles;
+
+  const ambientParticles = [];
+  const ambientCount = Math.min(1450, Math.max(520, Math.floor((viewportWidth * viewportHeight) / 1700)));
+  for (let index = 0; index < ambientCount; index += 1) {
+    const targetX = seeded(index, 3) * viewportWidth;
+    const targetY = seeded(index, 4) * viewportHeight;
+    const insideStage = targetX > stageRect.left - 18
+      && targetX < stageRect.right + 18
+      && targetY > stageRect.top - 18
+      && targetY < stageRect.bottom + 18;
+    if (insideStage) continue;
+    const mapX = Math.floor(seeded(index, 5) * particleMap.width);
+    const mapY = Math.floor(seeded(index, 6) * particleMap.height);
+    const pixel = (mapY * particleMap.width + mapX) * 3;
+    const r = particlePixels[pixel];
+    const g = particlePixels[pixel + 1];
+    const b = particlePixels[pixel + 2];
+    const brightness = (r + g + b) / 3;
+    if (brightness < 9) continue;
+    const random = seeded(index, 7);
+    ambientParticles.push({
+      kind: "ambient",
+      x: targetX + (random - 0.5) * 60,
+      y: targetY + (seeded(index, 8) - 0.5) * 60,
+      tx: targetX,
+      ty: targetY,
+      vx: 0,
+      vy: 0,
+      r,
+      g,
+      b,
+      alpha: Math.min(0.38, 0.09 + brightness / 1050),
+      size: 0.4 + random * 0.9,
+      phase: random * Math.PI * 2,
+    });
+  }
+  particles = [...ambientParticles, ...artworkParticles];
 };
 
 const getAudioEnergy = () => {
@@ -278,8 +336,9 @@ const drawSpectrum = (energy, time) => {
     const value = Math.max(idle, frequency);
     const height = Math.max(2, value * rect.height * 0.72);
     const gradient = spectrumContext.createLinearGradient(0, rect.height - height, 0, rect.height);
-    gradient.addColorStop(0, `rgba(78, 255, 207, ${0.22 + value * 0.5})`);
-    gradient.addColorStop(1, "rgba(44, 134, 174, 0.03)");
+    gradient.addColorStop(0, `rgba(255, 101, 157, ${0.2 + value * 0.55})`);
+    gradient.addColorStop(0.48, `rgba(47, 211, 240, ${0.12 + value * 0.35})`);
+    gradient.addColorStop(1, "rgba(22, 97, 146, 0.025)");
     spectrumContext.fillStyle = gradient;
     spectrumContext.fillRect(index * (width + gap), rect.height - height, Math.max(1, width), height);
   }
@@ -287,36 +346,47 @@ const drawSpectrum = (energy, time) => {
 
 const animate = (time) => {
   const energy = getAudioEnergy();
-  particleContext.fillStyle = "#031117";
-  particleContext.fillRect(0, 0, viewportWidth, viewportHeight);
+  particleContext.clearRect(0, 0, viewportWidth, viewportHeight);
   particleContext.globalCompositeOperation = "lighter";
+
+  if (particleStage) {
+    const glow = 0.42 + energy.overall * 0.8;
+    particleStage.style.borderColor = `rgba(75, 232, 237, ${Math.min(0.9, glow)})`;
+  }
 
   for (const particle of particles) {
     const dx = particle.x - mouse.x;
     const dy = particle.y - mouse.y;
     const distanceSquared = dx * dx + dy * dy;
-    if (mouse.active && distanceSquared < 18000 && distanceSquared > 0.1) {
+    if (mouse.active && distanceSquared < 25600 && distanceSquared > 0.1) {
       const distance = Math.sqrt(distanceSquared);
-      const force = (1 - distance / 135) * 1.15;
+      const force = (1 - distance / 160) * (particle.kind === "artwork" ? 1.35 : 0.92);
       particle.vx += (dx / distance) * force;
       particle.vy += (dy / distance) * force;
     }
 
-    const centerDx = particle.tx - viewportWidth / 2;
-    const centerDy = particle.ty - viewportHeight / 2;
+    const originX = particle.kind === "artwork" ? stageCenter.x : viewportWidth / 2;
+    const originY = particle.kind === "artwork" ? stageCenter.y : viewportHeight / 2;
+    const centerDx = particle.tx - originX;
+    const centerDy = particle.ty - originY;
     const centerDistance = Math.max(1, Math.hypot(centerDx, centerDy));
-    const beatForce = energy.bass * energy.bass * 0.13;
+    const musicEnergy = Math.max(0, energy.bass - 0.055);
+    const beatForce = musicEnergy * (particle.kind === "artwork" ? 1.25 : 0.5);
     particle.vx += (centerDx / centerDistance) * beatForce;
     particle.vy += (centerDy / centerDistance) * beatForce;
-    particle.vx += (particle.tx - particle.x) * 0.024;
-    particle.vy += (particle.ty - particle.y) * 0.024;
-    particle.vx *= 0.88;
-    particle.vy *= 0.88;
+    particle.vy += Math.sin(time * 0.0024 + particle.phase) * energy.overall * (particle.kind === "artwork" ? 0.13 : 0.07);
+    const spring = particle.kind === "artwork" ? 0.028 : 0.014;
+    const damping = particle.kind === "artwork" ? 0.88 : 0.92;
+    particle.vx += (particle.tx - particle.x) * spring;
+    particle.vy += (particle.ty - particle.y) * spring;
+    particle.vx *= damping;
+    particle.vy *= damping;
     particle.x += particle.vx;
     particle.y += particle.vy;
 
-    const pulse = 1 + energy.overall * 0.58 + Math.sin(time * 0.00075 + particle.phase) * 0.045;
-    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${particle.alpha * (0.72 + energy.overall)})`;
+    const pulse = 1 + energy.overall * (particle.kind === "artwork" ? 1.15 : 0.7) + Math.sin(time * 0.00075 + particle.phase) * 0.045;
+    const energyAlpha = particle.kind === "artwork" ? energy.overall * 1.2 : energy.overall * 0.75;
+    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${Math.min(1, particle.alpha * (0.74 + energyAlpha))})`;
     particleContext.beginPath();
     particleContext.arc(particle.x, particle.y, particle.size * pulse, 0, Math.PI * 2);
     particleContext.fill();
