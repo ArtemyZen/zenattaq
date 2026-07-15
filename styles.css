@@ -237,8 +237,11 @@ main {
   --card-scale: 1;
   --shadow-x: 0px;
   --shadow-y: 18px;
-  --shine-x: -45%;
-  --shine-angle: 112deg;
+  --foil-x: 50%;
+  --foil-y: 50%;
+  --foil-shift-x: 50%;
+  --foil-shift-y: 50%;
+  --foil-angle: 112deg;
   position: relative;
   aspect-ratio: 1;
   margin: 0;
@@ -256,27 +259,58 @@ main {
   will-change: transform;
 }
 
+.release-card__art::before,
 .release-card__art::after {
   position: absolute;
-  z-index: 5;
   inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(
-    var(--shine-angle),
-    transparent 38%,
-    rgba(255, 255, 255, 0.04) 44%,
-    rgba(255, 255, 255, 0.42) 50%,
-    rgba(255, 255, 255, 0.08) 56%,
-    transparent 62%
-  );
-  background-size: 52% 160%;
-  background-repeat: no-repeat;
-  background-position: var(--shine-x) 50%;
   opacity: 0;
   content: "";
   pointer-events: none;
-  transition: opacity 180ms ease, background-position 90ms linear;
+  transition: opacity 220ms ease;
+}
+
+.release-card__art::before {
+  z-index: 4;
+  inset: -18%;
+  background:
+    repeating-linear-gradient(
+      var(--foil-angle),
+      transparent 0 8%,
+      rgba(75, 226, 255, 0.22) 11%,
+      rgba(187, 92, 255, 0.2) 15%,
+      rgba(255, 90, 170, 0.18) 18%,
+      rgba(255, 222, 82, 0.18) 22%,
+      rgba(73, 255, 190, 0.22) 26%,
+      transparent 31% 39%
+    );
+  background-size: 165% 165%;
+  background-position: var(--foil-shift-x) var(--foil-shift-y);
+  filter: blur(7px) saturate(1.45);
+  mix-blend-mode: color-dodge;
+  transform: translateZ(1px);
+}
+
+.release-card__art::after {
+  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.08);
+  background:
+    radial-gradient(
+      ellipse 78% 70% at var(--foil-x) var(--foil-y),
+      rgba(255, 255, 255, 0.34) 0%,
+      rgba(147, 235, 255, 0.16) 24%,
+      rgba(184, 112, 255, 0.08) 43%,
+      transparent 72%
+    ),
+    linear-gradient(
+      var(--foil-angle),
+      transparent 18%,
+      rgba(255, 255, 255, 0.05) 38%,
+      rgba(255, 255, 255, 0.14) 50%,
+      rgba(111, 255, 222, 0.05) 62%,
+      transparent 82%
+    );
+  mix-blend-mode: screen;
 }
 
 .release-card__art img {
@@ -366,9 +400,14 @@ main {
   --card-scale: 1.018;
 }
 
+.release-card:hover .release-card__art::before,
+.release-card:focus-visible .release-card__art::before {
+  opacity: 0.58;
+}
+
 .release-card:hover .release-card__art::after,
 .release-card:focus-visible .release-card__art::after {
-  opacity: 0.72;
+  opacity: 0.66;
 }
 
 .release-card:hover .release-card__open,
