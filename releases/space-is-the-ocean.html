@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Space Is the Ocean — the debut album by ZEN ATTAQ." />
+    <meta name="theme-color" content="#020a10" />
+    <title>Space Is the Ocean — ZEN ATTAQ</title>
+    <link rel="icon" href="../assets/favicon-a.svg?v=2" type="image/svg+xml" />
+    <link rel="stylesheet" href="space-is-the-ocean.css" />
+    <script src="space-is-the-ocean-particle-map.js" defer></script>
+    <script src="space-is-the-ocean.js" defer></script>
+  </head>
+  <body>
+    <canvas class="particle-ocean" data-particle-ocean aria-hidden="true"></canvas>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="album-header">
+      <a class="back-link" href="../index.html" aria-label="Back to discography">
+        <span aria-hidden="true">←</span>
+        <span>Discography</span>
+      </a>
+      <a class="identity title-font" href="../index.html">ZEN ATTAQ</a>
+      <p>Album / 2018</p>
+    </header>
+
+    <main class="album-layout">
+      <section class="player-panel" aria-labelledby="player-title">
+        <div class="panel-kicker">
+          <span>01 / 09</span>
+          <span>Audio transmission</span>
+        </div>
+
+        <div class="now-playing">
+          <canvas class="spectrum" data-spectrum aria-hidden="true"></canvas>
+          <div class="now-playing__meta">
+            <p>Now playing</p>
+            <h1 id="player-title" class="title-font" data-track-title>Into the Deep</h1>
+          </div>
+        </div>
+
+        <div class="transport" aria-label="Audio controls">
+          <button class="transport__skip" type="button" data-previous aria-label="Previous track">←</button>
+          <button class="transport__play" type="button" data-play aria-label="Play">
+            <span data-play-icon aria-hidden="true">▶</span>
+          </button>
+          <button class="transport__skip" type="button" data-next aria-label="Next track">→</button>
+          <div class="transport__timeline">
+            <input data-seek type="range" min="0" max="1000" value="0" aria-label="Track position" />
+            <div class="transport__time" aria-live="off">
+              <span data-current-time>0:00</span>
+              <span data-duration>0:00</span>
+            </div>
+          </div>
+        </div>
+
+        <ol class="track-list" data-track-list aria-label="Space Is the Ocean track list"></ol>
+        <audio data-audio preload="metadata"></audio>
+      </section>
+
+      <aside class="album-details" aria-labelledby="album-title">
+        <figure class="album-cover" data-album-cover-tilt>
+          <img
+            src="../assets/covers/space-is-the-ocean.jpg"
+            alt="Space Is the Ocean album cover"
+            width="1600"
+            height="1600"
+          />
+          <figcaption>ZEN ATTAQ / DEBUT ALBUM</figcaption>
+        </figure>
+
+        <div class="album-copy">
+          <p class="eyebrow">An electronic voyage into the unknown</p>
+          <h2 id="album-title" class="title-font">Space Is the Ocean</h2>
+          <p class="album-copy__description">
+            <strong>Space Is the Ocean</strong> imagines the universe as an endless body of water – vast,
+            silent and full of unknown life. Its tracks drift through distant signals, mechanical rhythms
+            and weightless electronic landscapes, following a solitary journey into places that feel both
+            alien and strangely familiar.
+          </p>
+        </div>
+
+        <nav class="streaming" aria-label="Listen on streaming services">
+          <p class="streaming__label">Listen on</p>
+          <div class="streaming__grid">
+            <a href="https://open.spotify.com/album/7GQU2XZXPanLTpN3HhOxSD" target="_blank" rel="noreferrer">
+              <img src="../assets/icons/spotify.svg" alt="" />
+              <span>Spotify</span>
+              <b aria-hidden="true">↗</b>
+            </a>
+            <a href="https://music.apple.com/us/album/space-is-the-ocean/1494523459" target="_blank" rel="noreferrer">
+              <img src="../assets/icons/applemusic.svg" alt="" />
+              <span>Apple Music</span>
+              <b aria-hidden="true">↗</b>
+            </a>
+            <a href="https://music.yandex.ru/album/9531731" target="_blank" rel="noreferrer">
+              <img src="../assets/icons/yandexmusic.svg" alt="" />
+              <span>Yandex Music</span>
+              <b aria-hidden="true">↗</b>
+            </a>
+            <a href="https://soundcloud.com/zenattaq/sets/space-is-the-ocean" target="_blank" rel="noreferrer">
+              <img src="../assets/icons/soundcloud.svg" alt="" />
+              <span>SoundCloud</span>
+              <b aria-hidden="true">↗</b>
+            </a>
+          </div>
+          <a class="bandcamp-link" href="https://zenattaq.bandcamp.com/album/space-is-the-ocean" target="_blank" rel="noreferrer">
+            <img src="../assets/icons/bandcamp.svg" alt="" />
+            <span><strong>Bandcamp</strong><small>Album download available in WAV format</small></span>
+            <b aria-hidden="true">↗</b>
+          </a>
+        </nav>
+      </aside>
+    </main>
+
+    <footer class="album-footer">
+      <p>© <span data-current-year>2026</span> ZEN ATTAQ</p>
+      <p>Move through sound / disturb the ocean</p>
+    </footer>
+  </body>
+</html>
