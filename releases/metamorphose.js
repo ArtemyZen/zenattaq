@@ -98,10 +98,10 @@ const onCoverMove = (event) => {
   const rect = cover.getBoundingClientRect();
   const x = (event.clientX - rect.left) / rect.width - 0.5;
   const y = (event.clientY - rect.top) / rect.height - 0.5;
-  cover.style.setProperty("--cover-tilt-x", `${y * -8}deg`);
-  cover.style.setProperty("--cover-tilt-y", `${x * 8}deg`);
-  cover.style.setProperty("--cover-shadow-x", `${x * -18}px`);
-  cover.style.setProperty("--cover-shadow-y", `${18 + y * 12}px`);
+  cover.style.setProperty("--cover-tilt-x", `${y * -12}deg`);
+  cover.style.setProperty("--cover-tilt-y", `${x * 12}deg`);
+  cover.style.setProperty("--cover-shadow-x", `${x * -28}px`);
+  cover.style.setProperty("--cover-shadow-y", `${20 + y * 18}px`);
   cover.style.setProperty("--cover-foil-x", `${50 + x * 62}%`);
   cover.style.setProperty("--cover-foil-y", `${50 + y * 62}%`);
   cover.style.setProperty("--cover-foil-angle", `${112 + x * 16 - y * 12}deg`);

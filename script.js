@@ -17,10 +17,10 @@ if (!reduceMotion.matches) {
 
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        art.style.setProperty("--tilt-x", `${y * -8}deg`);
-        art.style.setProperty("--tilt-y", `${x * 8}deg`);
-        art.style.setProperty("--shadow-x", `${x * -18}px`);
-        art.style.setProperty("--shadow-y", `${18 + y * 12}px`);
+        art.style.setProperty("--tilt-x", `${y * -12}deg`);
+        art.style.setProperty("--tilt-y", `${x * 12}deg`);
+        art.style.setProperty("--shadow-x", `${x * -28}px`);
+        art.style.setProperty("--shadow-y", `${20 + y * 18}px`);
         art.style.setProperty("--foil-shift-x", `${50 + x * 62}%`);
         art.style.setProperty("--foil-shift-y", `${50 + y * 62}%`);
         art.style.setProperty("--foil-angle", `${112 + x * 16 - y * 12}deg`);

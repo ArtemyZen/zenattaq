@@ -169,10 +169,10 @@ if (albumCover && !reducedMotion.matches) {
     const y = (event.clientY - rect.top) / rect.height - 0.5;
     cancelAnimationFrame(coverFrame);
     coverFrame = requestAnimationFrame(() => {
-      albumCover.style.setProperty("--cover-tilt-x", `${y * -8}deg`);
-      albumCover.style.setProperty("--cover-tilt-y", `${x * 8}deg`);
-      albumCover.style.setProperty("--cover-shadow-x", `${x * -18}px`);
-      albumCover.style.setProperty("--cover-shadow-y", `${18 + y * 12}px`);
+      albumCover.style.setProperty("--cover-tilt-x", `${y * -12}deg`);
+      albumCover.style.setProperty("--cover-tilt-y", `${x * 12}deg`);
+      albumCover.style.setProperty("--cover-shadow-x", `${x * -28}px`);
+      albumCover.style.setProperty("--cover-shadow-y", `${20 + y * 18}px`);
       albumCover.style.setProperty("--cover-foil-x", `${50 + x * 62}%`);
       albumCover.style.setProperty("--cover-foil-y", `${50 + y * 62}%`);
       albumCover.style.setProperty("--cover-foil-angle", `${112 + x * 16 - y * 12}deg`);
@@ -324,6 +324,9 @@ const sampleCoverLegacy = () => {
       alpha: Math.min(0.38, 0.09 + brightness / 1050),
       size: 0.4 + random * 0.9,
       phase: random * Math.PI * 2,
+      twinkle: seeded(index, 9) > 0.94,
+      twinkleOffset: seeded(index, 10) * 16000,
+      twinkleInterval: 2667 + seeded(index, 11) * 3333,
     });
   }
   particles = [...ambientParticles, ...artworkParticles];
@@ -372,6 +375,9 @@ const sampleCover = () => {
       alpha: 0.08 + random * 0.2,
       size: 0.48 + random * 0.78,
       phase: random * Math.PI * 2,
+      twinkle: seeded(index, 18) > 0.94,
+      twinkleOffset: seeded(index, 19) * 16000,
+      twinkleInterval: 2667 + seeded(index, 20) * 3333,
     });
   }
   particles = ambient;
@@ -567,8 +573,11 @@ const animate = (time) => {
     particle.x += particle.vx;
     particle.y += particle.vy;
 
-    const pulse = 1;
-    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${Math.min(1, particle.alpha * 0.74)})`;
+    const twinkleTime = particle.twinkle ? (time + particle.twinkleOffset) % particle.twinkleInterval : 1000;
+    const twinkle = twinkleTime < 500 ? Math.sin((twinkleTime / 500) * Math.PI) : 0;
+    const pulse = 1 + twinkle * 0.65;
+    const alpha = Math.min(1, particle.alpha * 0.74 + twinkle * 0.58);
+    particleContext.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${alpha})`;
     particleContext.beginPath();
     particleContext.arc(particle.x, particle.y, particle.size * pulse, 0, Math.PI * 2);
     particleContext.fill();

@@ -351,7 +351,7 @@ input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border: 0; bo
   width: 100%;
   max-width: 310px;
   gap: 12px;
-  perspective: 1000px;
+  perspective: 760px;
 }
 
 .album-cover {
@@ -441,6 +441,34 @@ input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border: 0; bo
   font-size: clamp(27px, 2.35vw, 40px);
   line-height: 0.92;
   letter-spacing: -0.03em;
+}
+
+.album-year {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.genre-tags {
+  display: flex;
+  margin: 8px 0 0;
+  padding: 0;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+}
+
+.genre-tags li {
+  padding: 3px 6px 2px;
+  border: 1px solid var(--line);
+  color: var(--foam);
+  background: rgba(103, 231, 232, 0.035);
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
 }
 
 .album-copy__description {

@@ -179,6 +179,11 @@ main {
   white-space: nowrap;
 }
 
+.intro h1 span {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232, 233, 227, 0.44);
+}
+
 .intro__copy {
   max-width: 310px;
   margin: 0 0 3px;
@@ -228,7 +233,7 @@ main {
   display: block;
   min-width: 0;
   outline-offset: 7px;
-  perspective: 1000px;
+  perspective: 760px;
 }
 
 .release-card__art {
@@ -393,6 +398,26 @@ main {
 .release-card:hover .release-card__art::before,
 .release-card:focus-visible .release-card__art::before {
   opacity: 0.58;
+}
+
+.genre-tags {
+  display: flex;
+  margin: 7px 0 0;
+  padding: 0;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+}
+
+.genre-tags li {
+  padding: 3px 6px 2px;
+  border: 1px solid var(--accent);
+  color: #b9c8c3;
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
 }
 
 .release-card:hover .release-card__art::after,

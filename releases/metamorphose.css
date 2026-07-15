@@ -1,4 +1,4 @@
-@import url("space-is-the-ocean.css");
+@import url("space-is-the-ocean.css?v=20260715-4");
 
 :root {
   --bg: #011113;
@@ -65,7 +65,7 @@ body {
 .album-details { align-content: start; }
 .album-cover::after { opacity: 0.32; }
 .metamorphose-copy h2 { font-size: clamp(25px, 2vw, 34px); }
-.metamorphose-copy .album-copy__description { margin-top: 9px; font-size: clamp(9px, 0.68vw, 11px); line-height: 1.42; }
+.metamorphose-copy .album-copy__description { margin-top: 9px; font-size: clamp(10.5px, 0.76vw, 12.5px); line-height: 1.48; }
 
 .album-footer__lab {
   display: grid;

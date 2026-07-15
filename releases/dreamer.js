@@ -164,10 +164,10 @@ if (albumCover && !reducedMotion.matches) {
     const y = (event.clientY - rect.top) / rect.height - 0.5;
     cancelAnimationFrame(coverFrame);
     coverFrame = requestAnimationFrame(() => {
-      albumCover.style.setProperty("--cover-tilt-x", `${y * -8}deg`);
-      albumCover.style.setProperty("--cover-tilt-y", `${x * 8}deg`);
-      albumCover.style.setProperty("--cover-shadow-x", `${x * -18}px`);
-      albumCover.style.setProperty("--cover-shadow-y", `${18 + y * 12}px`);
+      albumCover.style.setProperty("--cover-tilt-x", `${y * -12}deg`);
+      albumCover.style.setProperty("--cover-tilt-y", `${x * 12}deg`);
+      albumCover.style.setProperty("--cover-shadow-x", `${x * -28}px`);
+      albumCover.style.setProperty("--cover-shadow-y", `${20 + y * 18}px`);
       albumCover.style.setProperty("--cover-foil-x", `${50 + x * 62}%`);
       albumCover.style.setProperty("--cover-foil-y", `${50 + y * 62}%`);
       albumCover.style.setProperty("--cover-foil-angle", `${112 + x * 16 - y * 12}deg`);
@@ -561,10 +561,10 @@ const animate = (time) => {
         + dragonDirX * proximity * 0.82 - dragonDirY * turbulence;
       const pushY = normalY * radialForce + normalX * swirl
         + dragonDirY * proximity * 0.82 + dragonDirX * turbulence;
-      particle.vx += pushX * 0.125;
-      particle.vy += pushY * 0.125;
-      particle.ox += pushX * 0.085;
-      particle.oy += pushY * 0.085;
+      particle.vx += pushX * 0.15625;
+      particle.vy += pushY * 0.15625;
+      particle.ox += pushX * 0.10625;
+      particle.oy += pushY * 0.10625;
     }
     cloudFrame.push({ particle, baseX, baseY });
   }
@@ -580,10 +580,10 @@ const animate = (time) => {
     const angle = item.particle.id * 1.73 + time * 0.0024;
     const mixX = (Math.cos(angle) * 0.42 - dragonDirY * 0.34) * mix;
     const mixY = (Math.sin(angle) * 0.42 + dragonDirX * 0.34) * mix;
-    item.particle.vx += mixX * 0.125;
-    item.particle.vy += mixY * 0.125;
-    item.particle.ox += mixX * 0.03;
-    item.particle.oy += mixY * 0.03;
+    item.particle.vx += mixX * 0.15625;
+    item.particle.vy += mixY * 0.15625;
+    item.particle.ox += mixX * 0.0375;
+    item.particle.oy += mixY * 0.0375;
   }
 
   for (const item of cloudFrame) {
