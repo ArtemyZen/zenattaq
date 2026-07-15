@@ -237,8 +237,6 @@ main {
   --card-scale: 1;
   --shadow-x: 0px;
   --shadow-y: 18px;
-  --foil-x: 50%;
-  --foil-y: 50%;
   --foil-shift-x: 50%;
   --foil-shift-y: 50%;
   --foil-angle: 112deg;
@@ -294,22 +292,14 @@ main {
   z-index: 5;
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.08);
-  background:
-    radial-gradient(
-      ellipse 78% 70% at var(--foil-x) var(--foil-y),
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(147, 235, 255, 0.16) 24%,
-      rgba(184, 112, 255, 0.08) 43%,
-      transparent 72%
-    ),
-    linear-gradient(
-      var(--foil-angle),
-      transparent 18%,
-      rgba(255, 255, 255, 0.05) 38%,
-      rgba(255, 255, 255, 0.14) 50%,
-      rgba(111, 255, 222, 0.05) 62%,
-      transparent 82%
-    );
+  background: linear-gradient(
+    var(--foil-angle),
+    transparent 18%,
+    rgba(255, 255, 255, 0.05) 38%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(111, 255, 222, 0.05) 62%,
+    transparent 82%
+  );
   mix-blend-mode: screen;
 }
 
@@ -433,13 +423,40 @@ main {
 }
 
 .site-footer__bandcamp {
-  width: min(360px, 42vw);
-  height: 50px;
+  position: relative;
+  display: grid;
+  width: 172px;
+  height: 38px;
   overflow: hidden;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.035);
+  font-family: var(--title-font);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 
 .site-footer__bandcamp iframe {
+  position: absolute;
+  z-index: 2;
+  inset: -6px 0 0;
   display: block;
+  opacity: 0;
+}
+
+.site-footer__bandcamp span {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.site-footer__bandcamp:hover {
+  border-color: #fff;
+  color: #06100d;
+  background: #fff;
 }
 
 .site-footer p {
@@ -503,7 +520,8 @@ main {
   }
 
   .site-footer__bandcamp {
-    width: 100%;
+    width: 172px;
+    align-self: flex-end;
   }
 }
 

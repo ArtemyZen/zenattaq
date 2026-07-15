@@ -21,8 +21,6 @@ if (!reduceMotion.matches) {
         art.style.setProperty("--tilt-y", `${x * 8}deg`);
         art.style.setProperty("--shadow-x", `${x * -18}px`);
         art.style.setProperty("--shadow-y", `${18 + y * 12}px`);
-        art.style.setProperty("--foil-x", `${50 + x * 82}%`);
-        art.style.setProperty("--foil-y", `${50 + y * 82}%`);
         art.style.setProperty("--foil-shift-x", `${50 + x * 62}%`);
         art.style.setProperty("--foil-shift-y", `${50 + y * 62}%`);
         art.style.setProperty("--foil-angle", `${112 + x * 16 - y * 12}deg`);
@@ -35,8 +33,6 @@ if (!reduceMotion.matches) {
       art.style.setProperty("--tilt-y", "0deg");
       art.style.setProperty("--shadow-x", "0px");
       art.style.setProperty("--shadow-y", "18px");
-      art.style.setProperty("--foil-x", "50%");
-      art.style.setProperty("--foil-y", "50%");
       art.style.setProperty("--foil-shift-x", "50%");
       art.style.setProperty("--foil-shift-y", "50%");
       art.style.setProperty("--foil-angle", "112deg");
