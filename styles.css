@@ -469,14 +469,6 @@ main {
   transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 
-.site-footer__bandcamp iframe {
-  position: absolute;
-  z-index: 2;
-  inset: -6px 0 0;
-  display: block;
-  opacity: 0;
-}
-
 .site-footer__bandcamp span {
   position: relative;
   z-index: 1;
