@@ -6,6 +6,7 @@ const pageContext = pageCanvas?.getContext("2d", { alpha: true });
 const video = document.querySelector("[data-vision-video]");
 const startButton = document.querySelector("[data-start-camera]");
 const stopButton = document.querySelector("[data-stop-camera]");
+const switchCameraButton = document.querySelector("[data-switch-camera]");
 const fullscreenButton = document.querySelector("[data-toggle-fullscreen]");
 const cameraStatus = document.querySelector("[data-camera-status]");
 const cover = document.querySelector("[data-album-cover-tilt]");
@@ -35,6 +36,8 @@ let frame = 0;
 let particles = [];
 let previousLuminance = null;
 let cameraStream = null;
+let currentFacingMode = "user";
+let cameraSwitching = false;
 let sourceMode = "demo";
 let animationFrame = 0;
 let fallbackFullscreen = false;
@@ -151,8 +154,10 @@ const drawMirroredCameraFrame = () => {
 
   analysisContext.save();
   analysisContext.clearRect(0, 0, targetWidth, targetHeight);
-  analysisContext.translate(targetWidth, 0);
-  analysisContext.scale(-1, 1);
+  if (currentFacingMode === "user") {
+    analysisContext.translate(targetWidth, 0);
+    analysisContext.scale(-1, 1);
+  }
   analysisContext.drawImage(
     video,
     sourceX,
@@ -393,6 +398,12 @@ const render = () => {
 const updateCameraInterface = (cameraActive) => {
   startButton.hidden = cameraActive;
   stopButton.hidden = !cameraActive;
+  switchCameraButton.hidden = !cameraActive;
+  switchCameraButton.textContent = currentFacingMode === "user" ? "Rear camera" : "Front camera";
+  switchCameraButton.setAttribute(
+    "aria-label",
+    currentFacingMode === "user" ? "Switch to rear camera" : "Switch to front camera",
+  );
   startButton.disabled = false;
   const label = startButton.querySelector("strong");
   if (label) label.textContent = "Start camera";
@@ -407,6 +418,21 @@ const stopCamera = () => {
   pointer.active = false;
   cameraStatus.textContent = "";
   updateCameraInterface(false);
+};
+
+const requestCamera = async (facingMode) => {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: facingMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: false,
+  });
+  try {
+    video.srcObject = stream;
+    await video.play();
+    return stream;
+  } catch (error) {
+    stream.getTracks().forEach((track) => track.stop());
+    throw error;
+  }
 };
 
 const updateFullscreenInterface = () => {
@@ -448,12 +474,8 @@ const startCamera = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error("Camera access requires HTTPS or localhost in a supported browser.");
     }
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false,
-    });
-    video.srcObject = cameraStream;
-    await video.play();
+    currentFacingMode = "user";
+    cameraStream = await requestCamera(currentFacingMode);
     sourceMode = "camera";
     previousLuminance = null;
     pointer.active = false;
@@ -466,6 +488,37 @@ const startCamera = async () => {
     startButton.disabled = false;
     if (label) label.textContent = "Start camera";
     cameraStatus.textContent = error?.message || "Camera access was not granted.";
+  }
+};
+
+const switchCamera = async () => {
+  if (cameraSwitching || sourceMode !== "camera") return;
+  cameraSwitching = true;
+  switchCameraButton.disabled = true;
+  const previousFacingMode = currentFacingMode;
+  const nextFacingMode = previousFacingMode === "user" ? "environment" : "user";
+  cameraStatus.textContent = "Switching camera...";
+  cameraStream?.getTracks().forEach((track) => track.stop());
+  cameraStream = null;
+
+  try {
+    cameraStream = await requestCamera(nextFacingMode);
+    currentFacingMode = nextFacingMode;
+    previousLuminance = null;
+    cameraStatus.textContent = "";
+  } catch (error) {
+    try {
+      cameraStream = await requestCamera(previousFacingMode);
+      cameraStatus.textContent = "This camera is unavailable.";
+    } catch {
+      sourceMode = "demo";
+      video.srcObject = null;
+      cameraStatus.textContent = error?.message || "Could not switch camera.";
+    }
+  } finally {
+    cameraSwitching = false;
+    switchCameraButton.disabled = false;
+    updateCameraInterface(sourceMode === "camera");
   }
 };
 
@@ -517,6 +570,7 @@ document.documentElement.addEventListener("pointerleave", () => { pagePointer.ac
 window.addEventListener("blur", () => { pagePointer.active = false; });
 startButton?.addEventListener("click", startCamera);
 stopButton?.addEventListener("click", stopCamera);
+switchCameraButton?.addEventListener("click", switchCamera);
 fullscreenButton?.addEventListener("click", toggleFullscreen);
 document.addEventListener("fullscreenchange", updateFullscreenInterface);
 document.addEventListener("keydown", (event) => {

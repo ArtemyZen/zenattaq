@@ -71,6 +71,7 @@ body {
 
 .metamorph-vision__start,
 .metamorph-vision__stop,
+.metamorph-vision__switch,
 .metamorph-vision__fullscreen {
   position: absolute;
   z-index: 2;
@@ -118,6 +119,16 @@ body {
 }
 
 .metamorph-vision__stop:hover { border-color: var(--foam); color: var(--foam); }
+.metamorph-vision__switch {
+  display: none;
+  bottom: 15px;
+  left: 50%;
+  padding: 8px 13px;
+  color: var(--muted);
+  font-size: 8px;
+  transform: translateX(-50%);
+}
+.metamorph-vision__switch:hover { border-color: var(--foam); color: var(--foam); }
 .metamorph-vision__fullscreen {
   right: 15px;
   bottom: 15px;
@@ -127,7 +138,8 @@ body {
 }
 .metamorph-vision__fullscreen:hover { border-color: var(--foam); color: var(--foam); }
 .metamorph-vision__start[hidden],
-.metamorph-vision__stop[hidden] { display: none; }
+.metamorph-vision__stop[hidden],
+.metamorph-vision__switch[hidden] { display: none; }
 
 .metamorph-vision:fullscreen {
   width: 100vw;
@@ -184,9 +196,11 @@ body.vision-fullscreen-lock .metamorph-vision {
 
 .metamorph-vision:fullscreen .metamorph-vision__start,
 .metamorph-vision:fullscreen .metamorph-vision__stop,
+.metamorph-vision:fullscreen .metamorph-vision__switch,
 .metamorph-vision:fullscreen .metamorph-vision__status,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__start,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__stop,
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__switch,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__status {
   display: none !important;
 }
@@ -286,6 +300,25 @@ body.vision-fullscreen-lock .metamorph-vision {
     justify-self: center;
   }
   .player-panel--empty { min-height: 250px; }
+  .metamorph-vision__stop {
+    left: 12px;
+    bottom: 12px;
+    padding-inline: 9px;
+    font-size: 7px;
+    transform: none;
+  }
+  .metamorph-vision__switch:not([hidden]) {
+    display: block;
+    bottom: 12px;
+    padding-inline: 9px;
+    font-size: 7px;
+  }
+  .metamorph-vision__fullscreen {
+    right: 12px;
+    bottom: 12px;
+    padding-inline: 9px;
+    font-size: 7px;
+  }
 }
 
 @media (max-width: 560px) {
