@@ -131,8 +131,8 @@ body {
 
 .metamorph-vision:fullscreen {
   width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   border: 0;
 }
 
@@ -148,6 +148,58 @@ body {
 }
 
 body.vision-fullscreen-lock { overflow: hidden; }
+
+body.vision-fullscreen-lock .album-header,
+body.vision-fullscreen-lock .album-footer,
+body.vision-fullscreen-lock .album-details,
+body.vision-fullscreen-lock .player-panel,
+body.vision-fullscreen-lock .metamorph-page-particles,
+body.vision-fullscreen-lock .atmosphere,
+body.vision-fullscreen-lock .grain {
+  display: none !important;
+}
+
+body.vision-fullscreen-lock .album-layout {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: #00151b;
+}
+
+body.vision-fullscreen-lock .metamorph-vision {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+}
+
+.metamorph-vision:fullscreen .metamorph-vision__start,
+.metamorph-vision:fullscreen .metamorph-vision__stop,
+.metamorph-vision:fullscreen .metamorph-vision__status,
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__start,
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__stop,
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__status {
+  display: none !important;
+}
+
+.metamorph-vision:fullscreen .metamorph-vision__fullscreen,
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__fullscreen {
+  position: fixed;
+  z-index: 10001;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  color: var(--foam);
+  background: rgba(0, 10, 18, 0.72);
+}
 
 .metamorph-vision__status {
   position: absolute;
@@ -207,14 +259,38 @@ body.vision-fullscreen-lock { overflow: hidden; }
 .album-footer__lab span { font-size: 8px; }
 
 @media (max-width: 920px) {
+  .album-layout {
+    width: 100%;
+    padding-inline: clamp(16px, 5vw, 34px);
+    justify-items: center;
+    row-gap: 22px;
+  }
+  .album-details {
+    width: min(100%, 460px);
+    max-width: 460px;
+    justify-self: center;
+  }
   .metamorph-vision {
     grid-column: 1;
     grid-row: 2;
-    width: 100vw;
-    height: 100svh;
-    min-height: 100svh;
-    margin: 10px 0 22px calc(50% - 50vw);
+    width: min(100%, 680px);
+    height: min(72svh, 640px);
+    min-height: 420px;
+    margin: 0 auto;
+    justify-self: center;
   }
-  .player-panel { grid-row: 3; }
+  .player-panel {
+    grid-row: 3;
+    width: min(100%, 460px);
+    max-width: 460px;
+    justify-self: center;
+  }
   .player-panel--empty { min-height: 250px; }
+}
+
+@media (max-width: 560px) {
+  .metamorph-vision {
+    height: 68svh;
+    min-height: 360px;
+  }
 }
