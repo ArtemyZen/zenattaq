@@ -196,11 +196,9 @@ body.vision-fullscreen-lock .metamorph-vision {
 
 .metamorph-vision:fullscreen .metamorph-vision__start,
 .metamorph-vision:fullscreen .metamorph-vision__stop,
-.metamorph-vision:fullscreen .metamorph-vision__switch,
 .metamorph-vision:fullscreen .metamorph-vision__status,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__start,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__stop,
-.metamorph-vision.is-fallback-fullscreen .metamorph-vision__switch,
 .metamorph-vision.is-fallback-fullscreen .metamorph-vision__status {
   display: none !important;
 }
@@ -213,6 +211,20 @@ body.vision-fullscreen-lock .metamorph-vision {
   bottom: max(14px, env(safe-area-inset-bottom));
   color: var(--foam);
   background: rgba(0, 10, 18, 0.72);
+}
+
+.metamorph-vision:fullscreen .metamorph-vision__switch:not([hidden]),
+.metamorph-vision.is-fallback-fullscreen .metamorph-vision__switch:not([hidden]) {
+  position: fixed;
+  z-index: 10001;
+  display: block;
+  left: max(14px, env(safe-area-inset-left));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  padding: 8px 13px;
+  color: var(--foam);
+  font-size: 8px;
+  background: rgba(0, 10, 18, 0.72);
+  transform: none;
 }
 
 .metamorph-vision__status {
@@ -256,9 +268,25 @@ body.vision-fullscreen-lock .metamorph-vision {
 .empty-player__line--short { background: linear-gradient(90deg, var(--muted), transparent); }
 .empty-player__disc { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; }
 
-.empty-tracklist { display: grid; }
+.empty-tracklist {
+  position: relative;
+  display: grid;
+  min-height: 170px;
+}
 .empty-tracklist span { display: block; min-height: 34px; border-bottom: 1px solid rgba(75, 224, 205, 0.1); }
 .empty-tracklist span:last-child { border-bottom: 0; }
+.empty-tracklist__message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(232, 255, 251, 0.62);
+  font-size: clamp(15px, 1.25vw, 20px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-shadow: 0 0 22px rgba(32, 229, 215, 0.18);
+}
 
 .album-details { align-content: start; }
 .album-cover::after { opacity: 0.32; }
