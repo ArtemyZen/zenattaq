@@ -1,3 +1,8 @@
+const cleanPath = window.location.pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
+if (cleanPath !== window.location.pathname) {
+  window.history.replaceState(null, "", `${cleanPath}${window.location.search}${window.location.hash}`);
+}
+
 const tracks = [
   ["Into the Deep", "01. Into the Deep.ogg"],
   ["Event Horizon", "02. Event Horizon.ogg"],
