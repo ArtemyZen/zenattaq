@@ -201,6 +201,9 @@ const centerOffsetX = new Float32Array(2500);
 const centerOffsetY = new Float32Array(2500);
 const centerVelocityX = new Float32Array(2500);
 const centerVelocityY = new Float32Array(2500);
+const PARTICLE_DENSITY = 0.8;
+const PLANET_PARTICLE_COUNT = 1600;
+const MOON_PARTICLE_COUNT = 80;
 const particleMap = window.SPACE_OCEAN_PARTICLE_MAP;
 const particlePixels = particleMap
   ? Uint8Array.from(atob(particleMap.pixels), (character) => character.charCodeAt(0))
@@ -344,7 +347,9 @@ const sampleCover = () => {
   particleContext.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
 
   const ambient = [];
-  const count = Math.min(1800, Math.max(760, Math.floor((viewportWidth * viewportHeight) / 1450)));
+  const count = Math.floor(
+    Math.min(1800, Math.max(760, Math.floor((viewportWidth * viewportHeight) / 1450))) * PARTICLE_DENSITY,
+  );
   for (let index = 0; index < count; index += 1) {
     const targetX = seeded(index, 11) * viewportWidth;
     const targetY = seeded(index, 12) * viewportHeight;
@@ -491,7 +496,7 @@ const drawCenterVisualizer = (energy, time) => {
   centerContext.shadowBlur = 0;
   centerContext.restore();
 
-  for (let index = 0; index < 2000; index += 1) {
+  for (let index = 0; index < PLANET_PARTICLE_COUNT; index += 1) {
     const angle = index * 2.399963 + rotation;
     const radial = radius * Math.sqrt(seeded(index, 31));
     const depth = Math.sin(angle) * 0.5 + 0.5;
@@ -523,7 +528,7 @@ const drawCenterVisualizer = (energy, time) => {
     const moonOrbit = 2 + (maxMoonOrbit - 2) * moon.spread;
     const mx = cx + Math.cos(angle) * radius * moonOrbit;
     const my = cy + Math.sin(angle) * radius * moonOrbit * 0.36;
-    for (let index = 0; index < 100; index += 1) {
+    for (let index = 0; index < MOON_PARTICLE_COUNT; index += 1) {
       const dotAngle = index * 2.399963;
       const dotRadius = Math.sqrt(seeded(index, 40 + moonIndex)) * radius * 0.11;
       const particleIndex = 2000 + moonIndex * 100 + index;
